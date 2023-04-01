@@ -1,13 +1,14 @@
 package com.nilhcem.fakesmtp.server;
 
-import java.net.InetAddress;
-
+import com.nilhcem.fakesmtp.core.exception.BindPortException;
+import com.nilhcem.fakesmtp.core.exception.OutOfRangePortException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 import org.subethamail.smtp.server.SMTPServer;
-import com.nilhcem.fakesmtp.core.exception.BindPortException;
-import com.nilhcem.fakesmtp.core.exception.OutOfRangePortException;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * Starts and stops the SMTP server.
@@ -20,27 +21,35 @@ public enum SMTPServerHandler {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SMTPServerHandler.class);
 	private final MailSaver mailSaver = new MailSaver();
-	private final MailListener myListener = new MailListener(mailSaver);
-	private final SMTPServer smtpServer = new SMTPServer(new SimpleMessageListenerAdapter(myListener), new SMTPAuthHandlerFactory());
+	private SMTPServer smtpServer;
 
 	SMTPServerHandler() {
+	}
+
+	private SMTPServer initNewServer(int port, InetAddress bindAddress) throws UnknownHostException {
+		MailListener myListener = new MailListener(mailSaver);
+		return new SMTPServer.Builder()
+				.authenticationHandlerFactory(new SMTPAuthHandlerFactory())
+				.messageHandlerFactory(new SimpleMessageListenerAdapter(myListener))
+				.bindAddress(bindAddress).port(port).build();
 	}
 
 	/**
 	 * Starts the server on the port and address specified in parameters.
 	 *
-	 * @param port the SMTP port to be opened.
+	 * @param port        the SMTP port to be opened.
 	 * @param bindAddress the address to bind to. null means bind to all.
-	 * @throws BindPortException when the port can't be opened.
-	 * @throws OutOfRangePortException when port is out of range.
+	 * @throws BindPortException        when the port can't be opened.
+	 * @throws OutOfRangePortException  when port is out of range.
 	 * @throws IllegalArgumentException when port is out of range.
 	 */
 	public void startServer(int port, InetAddress bindAddress) throws BindPortException, OutOfRangePortException {
 		LOGGER.debug("Starting server on port {}", port);
 		try {
-			smtpServer.setBindAddress(bindAddress);
-			smtpServer.setPort(port);
+			this.smtpServer = initNewServer(port, bindAddress);
 			smtpServer.start();
+		}catch (UnknownHostException ex) {
+			throw new RuntimeException(ex);
 		} catch (RuntimeException exception) {
 			if (exception.getMessage().contains("BindException")) { // Can't open port
 				LOGGER.error("{}. Port {}", exception.getMessage(), port);

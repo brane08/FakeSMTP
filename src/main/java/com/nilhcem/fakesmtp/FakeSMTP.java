@@ -1,23 +1,18 @@
 package com.nilhcem.fakesmtp;
 
-import java.awt.EventQueue;
-import java.awt.Toolkit;
-import java.net.InetAddress;
-import java.net.URL;
-import java.net.UnknownHostException;
-
-import javax.swing.UIManager;
-
-import org.apache.commons.cli.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.apple.eawt.Application;
 import com.nilhcem.fakesmtp.core.ArgsHandler;
 import com.nilhcem.fakesmtp.core.Configuration;
 import com.nilhcem.fakesmtp.core.exception.UncaughtExceptionHandler;
 import com.nilhcem.fakesmtp.gui.MainFrame;
 import com.nilhcem.fakesmtp.server.SMTPServerHandler;
+import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.awt.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * Entry point of the application.
@@ -74,17 +69,6 @@ public final class FakeSMTP {
             EventQueue.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					try {
-						URL envelopeImage = getClass().getResource(Configuration.INSTANCE.get("application.icon.path"));
-						if (envelopeImage != null) {
-							Application.getApplication().setDockIconImage(Toolkit.getDefaultToolkit().getImage(envelopeImage));
-						}
-					} catch (RuntimeException e) {
-						LOGGER.debug("Error: {} - This is probably because we run on a non-Mac platform and these components are not implemented", e.getMessage());
-					} catch (Exception e) {
-						LOGGER.error("", e);
-					}
-
 					System.setProperty("apple.laf.useScreenMenuBar", "true");
 					System.setProperty("com.apple.mrj.application.apple.menu.about.name", Configuration.INSTANCE.get("application.name"));
 					UIManager.put("swing.boldMetal", Boolean.FALSE);

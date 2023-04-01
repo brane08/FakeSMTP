@@ -1,6 +1,10 @@
 package com.nilhcem.fakesmtp.server;
 
 import org.subethamail.smtp.AuthenticationHandler;
+import org.subethamail.smtp.MessageContext;
+import org.subethamail.smtp.RejectException;
+
+import java.util.Optional;
 
 /**
  * Simulates an authentication handler to allow capturing emails that are set up with login authentication.
@@ -29,7 +33,7 @@ import org.subethamail.smtp.AuthenticationHandler;
 	 * @param clientInput The client's input, eg "AUTH PLAIN dGVzdAB0ZXN0ADEyMzQ="
 	 */
 	@Override
-	public String auth(String clientInput) {
+	public Optional<String> auth(String clientInput, MessageContext messageContext) throws RejectException {
 		String prompt;
 
 		if (++pass == 1) {
@@ -40,7 +44,7 @@ import org.subethamail.smtp.AuthenticationHandler;
 			pass = 0;
 			prompt = null;
 		}
-		return prompt;
+		return Optional.ofNullable(prompt);
 	}
 
 	/**
